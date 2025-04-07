@@ -1,0 +1,48 @@
+#!/bin/bash
+
+# Check if the script is run as root
+if [ $(id -u) -ne 0 ]; then
+  echo "This script must be run as root"
+  exit 1
+fi
+
+# Check if KVM is already installed
+if [ -d "/etc/libvirt" ] && [ -f "/etc/libvirt/libvirtd.conf" ]; then
+  echo "KVM is already installed and configured"
+  exit 0
+fi
+
+# Install necessary packages
+echo "Installing necessary packages..."
+pacman -S --noconfirm qemu libvirt virt-manager bridge-utils dnsmasq
+
+# Enable and start libvirtd service
+echo "Enabling and starting libvirtd service..."
+systemctl enable libvirtd
+systemctl start libvirtd
+
+# Add current user to libvirt group
+echo "Adding current user to libvirt group..."
+usermod -aG libvirt $USER
+
+# Detect CPU type (AMD or Intel)
+echo "Detecting CPU type..."
+cpu_type=$(lscpu | grep "Vendor ID" | awk '{print $3}')
+if [ "$cpu_type" == "GenuineIntel" ]; then
+  echo "Intel CPU detected"
+  kvm_module="kvm_intel"
+else
+  echo "AMD CPU detected"
+  kvm_module="kvm_amd"
+fi
+
+# Load KVM kernel module
+echo "Loading KVM kernel module..."
+modprobe kvm
+modprobe $kvm_module
+
+# Verify KVM is enabled
+echo "Verifying KVM is enabled..."
+lsmod | grep kvm
+
+echo "KVM installation and configuration complete"
