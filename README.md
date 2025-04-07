@@ -6,4 +6,4 @@ This script sets up KVM (Kernel-based Virtual Machine) on Arch Linux.
 
 To run the script, you can use the following command:
 ```bash
-curl -s https://raw.githubusercontent.com/your-username/kvm/master/kvm | sudo bash
+curl -s https://raw.githubusercontent.com/meghbadoniya/kvm-archlinux/master/kvm | sudo bash
